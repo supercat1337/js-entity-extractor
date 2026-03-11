@@ -1,4 +1,3 @@
-```markdown
 # JS Entity Extractor 🔍
 
 [![npm version](https://img.shields.io/npm/v/js-entity-extractor.svg)](https://www.npmjs.com/package/js-entity-extractor)
@@ -135,6 +134,3 @@ MIT © Supercat1337 (Albert Bazaleev)
 ---
 
 **Made with ❤️ for the JavaScript community.**
-```
-
-Теперь README выглядит современно, содержит все необходимые разделы, отражает последние изменения (методы и свойства) и предоставляет чёткие инструкции.
