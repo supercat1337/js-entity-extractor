@@ -1,26 +1,24 @@
 # JS Entity Extractor 🔍
 
-[![npm version](https://img.shields.io/npm/v/js-entity-extractor.svg)](https://www.npmjs.com/package/js-entity-extractor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/js-entity-extractor)](https://nodejs.org/)
 
 A powerful command-line tool to extract user-defined **classes, functions, variables, parameters, methods, and properties** from JavaScript files. Perfect for code analysis, documentation generation, and migration tasks.
 
 ## ✨ Features
 
 - 📦 Extracts **all named entities**:
-  - `class` – class declarations
-  - `function` – function declarations
-  - `variable` – variables (including destructuring)
-  - `parameter` – function/method parameters (with context)
-  - `method` – class and object methods (including constructors)
-  - `property` – class fields, object properties, getters/setters
+    - `class` – class declarations
+    - `function` – function declarations
+    - `variable` – variables (including destructuring)
+    - `parameter` – function/method parameters (with context)
+    - `method` – class and object methods (including constructors)
+    - `property` – class fields, object properties, getters/setters
 - 🔍 **Modern JavaScript support** – understands optional chaining, nullish coalescing, and all ES2022+ syntax (via `espree`).
 - 🌐 **Glob patterns & recursion** – process entire projects with ease.
 - 🚫 **Exclude patterns** – ignore test files, node_modules, etc.
 - 📄 **Two output formats**:
-  - **Summary JSON** – unique names per type.
-  - **NDJSON** – detailed entity-by-entity data.
+    - **Summary JSON** – unique names per type.
+    - **NDJSON** – detailed entity-by-entity data.
 - 🎯 **Flexible filtering** – choose which types to include, enable local declarations, or restrict to exported entities.
 - 🖥️ **CLI-first** – designed for integration into build pipelines and scripts.
 
@@ -63,16 +61,16 @@ js-entity-extractor "lib/*.js"
 
 ## ⚙️ Options
 
-| Option                     | Description                                                                                           | Default                          |
-|----------------------------|-------------------------------------------------------------------------------------------------------|----------------------------------|
-| `-o, --output <file>`      | Write summary JSON to `<file>`. If omitted and no `--ndjson`, prints to stdout.                       | –                                |
-| `--ndjson <file>`          | Write full NDJSON data to `<file>`.                                                                   | –                                |
-| `-r, --recursive`          | For directory paths, automatically add `/**/*.js`.                                                   | `false`                          |
-| `-t, --types <types...>`   | Types to include: `class`, `function`, `variable`, `parameter`, `method`, `property`.                 | all                              |
-| `--include-locals`         | Include local declarations inside functions/blocks.                                                   | `false`                          |
-| `--exported-only`          | Only include exported entities.                                                                       | `false`                          |
-| `--exclude <pattern>`      | Exclude files/directories matching glob (can be repeated).                                            | `[]`                             |
-| `-h, --help`               | Show help.                                                                                            | –                                |
+| Option                   | Description                                                                           | Default |
+| ------------------------ | ------------------------------------------------------------------------------------- | ------- |
+| `-o, --output <file>`    | Write summary JSON to `<file>`. If omitted and no `--ndjson`, prints to stdout.       | –       |
+| `--ndjson <file>`        | Write full NDJSON data to `<file>`.                                                   | –       |
+| `-r, --recursive`        | For directory paths, automatically add `/**/*.js`.                                    | `false` |
+| `-t, --types <types...>` | Types to include: `class`, `function`, `variable`, `parameter`, `method`, `property`. | all     |
+| `--include-locals`       | Include local declarations inside functions/blocks.                                   | `false` |
+| `--exported-only`        | Only include exported entities.                                                       | `false` |
+| `--exclude <pattern>`    | Exclude files/directories matching glob (can be repeated).                            | `[]`    |
+| `-h, --help`             | Show help.                                                                            | –       |
 
 > **Note:** Both kebab-case (`--include-locals`) and camelCase (`--includeLocals`) are accepted for all options.
 
@@ -82,12 +80,12 @@ js-entity-extractor "lib/*.js"
 
 ```json
 {
-  "classes": ["MyClass", "AnotherClass"],
-  "functions": ["foo", "bar"],
-  "variables": ["x", "y"],
-  "parameters": ["a", "b", "callback"],
-  "methods": ["render", "update", "constructor"],
-  "properties": ["width", "height", "color"]
+    "classes": ["MyClass", "AnotherClass"],
+    "functions": ["foo", "bar"],
+    "variables": ["x", "y"],
+    "parameters": ["a", "b", "callback"],
+    "methods": ["render", "update", "constructor"],
+    "properties": ["width", "height", "color"]
 }
 ```
 
