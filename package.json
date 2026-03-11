@@ -1,0 +1,26 @@
+{
+    "name": "js-entity-extractor",
+    "version": "0.1.0",
+    "description": "Extract user-defined classes, functions, variables, and parameters from JavaScript files",
+    "type": "module",
+    "bin": {
+        "js-entity-extractor": "src/index.js"
+    },
+    "scripts": {
+        "start": "node src/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/supercat1337/js-entity-extractor.git"
+    },
+    "dependencies": {
+        "espree": "^11.2.0",
+        "fast-glob": "^3.3.3",
+        "minimist": "^1.2.8"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "author": "Albert Bazaleev",
+    "license": "MIT"
+}
