@@ -57,20 +57,28 @@ js-entity-extractor . -r --exclude "**/*.test.js" --exclude "node_modules/**" -o
 
 # Show summary in stdout (no output file)
 js-entity-extractor "lib/*.js"
+
+# Generate a dictionary of all names for autocompletion or spell-checking
+js-entity-extractor "src/**/*.js" --dictionary names.txt
+
+# Generate a clean dictionary with only valid identifiers
+js-entity-extractor "src/**/*.js" -d names.txt --dictionary-valid-only
 ```
 
 ## ⚙️ Options
 
-| Option                   | Description                                                                           | Default |
-| ------------------------ | ------------------------------------------------------------------------------------- | ------- |
-| `-o, --output <file>`    | Write summary JSON to `<file>`. If omitted and no `--ndjson`, prints to stdout.       | –       |
-| `--ndjson <file>`        | Write full NDJSON data to `<file>`.                                                   | –       |
-| `-r, --recursive`        | For directory paths, automatically add `/**/*.js`.                                    | `false` |
-| `-t, --types <types...>` | Types to include: `class`, `function`, `variable`, `parameter`, `method`, `property`. | all     |
-| `--include-locals`       | Include local declarations inside functions/blocks.                                   | `false` |
-| `--exported-only`        | Only include exported entities.                                                       | `false` |
-| `--exclude <pattern>`    | Exclude files/directories matching glob (can be repeated).                            | `[]`    |
-| `-h, --help`             | Show help.                                                                            | –       |
+| Option                    | Description                                                                           | Default |
+| ------------------------- | ------------------------------------------------------------------------------------- | ------- |
+| `-o, --output <file>`     | Write summary JSON to `<file>`. If omitted and no `--ndjson`, prints to stdout.       | –       |
+| `--ndjson <file>`         | Write full NDJSON data to `<file>`.                                                   | –       |
+| `-r, --recursive`         | For directory paths, automatically add `/**/*.js`.                                    | `false` |
+| `-t, --types <types...>`  | Types to include: `class`, `function`, `variable`, `parameter`, `method`, `property`. | all     |
+| `--include-locals`        | Include local declarations inside functions/blocks.                                   | `false` |
+| `--exported-only`         | Only include exported entities.                                                       | `false` |
+| `--exclude <pattern>`     | Exclude files/directories matching glob (can be repeated).                            | `[]`    |
+| `-h, --help`              | Show help.                                                                            | –       |
+| `-d, --dictionary <file>` | Write a flat text file with all unique entity names (one per line)                    |         |
+| `--dictionary-valid-only` | When used with --dictionary, only include names that are valid JavaScript             |         |
 
 > **Note:** Both kebab-case (`--include-locals`) and camelCase (`--includeLocals`) are accepted for all options.
 
