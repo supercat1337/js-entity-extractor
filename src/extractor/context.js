@@ -2,18 +2,18 @@
 
 /**
  * @typedef {Object} TraverseContext
- * @property {string} file - текущий файл
- * @property {boolean} inExport - находимся ли внутри экспорта
- * @property {string|null} currentFunction - имя текущей функции (для параметров)
- * @property {number} depth - глубина вложенности (0 = глобальный уровень)
- * @property {Set<string>} exportedNamesSet - имена, экспортированные через specifiers
+ * @property {string} file - current file path
+ * @property {boolean} inExport - whether we are inside an export declaration
+ * @property {string|null} currentFunction - name of the current function (for parameters)
+ * @property {number} depth - nesting depth (0 = global scope)
+ * @property {Set<string>} exportedNamesSet - names exported via specifiers
  */
 
 /**
  * Creates a new context with updated properties.
- * @param {TraverseContext} ctx - исходный контекст
- * @param {Partial<TraverseContext>} updates - поля для обновления
- * @returns {TraverseContext} новый контекст
+ * @param {TraverseContext} ctx - original context
+ * @param {Partial<TraverseContext>} updates - fields to update
+ * @returns {TraverseContext} new context
  */
 export function updateContext(ctx, updates) {
     return { ...ctx, ...updates };

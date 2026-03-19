@@ -7,7 +7,7 @@
  * @property {'class'|'function'|'variable'|'parameter'|'method'|'property'} type
  * @property {number} line
  * @property {boolean} exported
- * @property {string|null} [functionName] // только для parameter
+ * @property {string|null} [functionName] // only for parameter
  */
 
 /**

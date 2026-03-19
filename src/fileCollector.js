@@ -14,8 +14,9 @@ import path from 'node:path';
 export async function collectFiles(patterns, recursive, excludePatterns) {
     // Expand directories when recursive is true
     const expandedPatterns = [];
-    for (const pattern of patterns) {
+    for (let pattern of patterns) {
         try {
+            pattern = pattern.replace(/\\/g, '/');
             const stat = fs.statSync(pattern);
             if (stat.isDirectory()) {
                 if (recursive) {

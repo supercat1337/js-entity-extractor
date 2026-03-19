@@ -20,7 +20,8 @@ Options:
   --dictionary-valid-only  When used with --dictionary, only include names that are valid JavaScript identifiers (filters out symbols like *, +, etc.)
   -r, --recursive           For directory paths, add /**/*.js automatically
   -t, --types <types...>    Types to include: class, function, variable, parameter, method, property (default: all)
-  --include-locals          Include local declarations inside functions/blocks
+  --include-locals          Include local declarations inside functions/blocks (default: true)
+  --globals-only            Only include global declarations (equivalent to --no-include-locals)
   --exported-only           Only include exported entities
   --exclude <pattern>       Exclude files/directories matching glob (can be repeated)
   -h, --help                Show this help
@@ -39,10 +40,13 @@ async function main() {
             'include-locals': 'includeLocals',
             'exported-only': 'exportedOnly',
             'dictionary-valid-only': 'dictionaryValidOnly',
+            'globals-only': 'globalsOnly',
         },
         default: {
             types: ['class', 'function', 'variable', 'parameter', 'method', 'property'],
             exclude: [],
+            includeLocals: true,
+            globalsOnly: false,
         },
     });
 
@@ -55,11 +59,13 @@ async function main() {
     const types = Array.isArray(argv.types) ? argv.types : [argv.types];
     const exclude = Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude];
 
+    const includeLocals = argv.globalsOnly ? false : argv.includeLocals;
+
     const typeSet = new Set(types);
     /** @type {import('./types.js').ExtractionOptions} */
     const extractionOptions = {
         types: typeSet,
-        includeLocals: argv.includeLocals,
+        includeLocals: includeLocals,
         exportedOnly: argv.exportedOnly,
     };
 

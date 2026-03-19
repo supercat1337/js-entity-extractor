@@ -73,7 +73,8 @@ js-entity-extractor "src/**/*.js" -d names.txt --dictionary-valid-only
 | `--ndjson <file>`         | Write full NDJSON data to `<file>`.                                                   | –       |
 | `-r, --recursive`         | For directory paths, automatically add `/**/*.js`.                                    | `false` |
 | `-t, --types <types...>`  | Types to include: `class`, `function`, `variable`, `parameter`, `method`, `property`. | all     |
-| `--include-locals`        | Include local declarations inside functions/blocks.                                   | `false` |
+| `--include-locals`        | Include local declarations inside functions/blocks (default: true)                    | `true`  |
+| `--globals-only`          | Only include global declarations (equivalent to --no-include-locals)                  | `false` |
 | `--exported-only`         | Only include exported entities.                                                       | `false` |
 | `--exclude <pattern>`     | Exclude files/directories matching glob (can be repeated).                            | `[]`    |
 | `-h, --help`              | Show help.                                                                            | –       |

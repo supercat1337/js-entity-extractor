@@ -1,7 +1,7 @@
 // @ts-check
-
-import { enterBlock, enterFunction } from './context.js';
 import { forEachNameInPattern, getStaticName } from './patternUtils.js';
+import { enterBlock, enterFunction } from './context.js';
+
 /**
  * @typedef {import('./context.js').TraverseContext} TraverseContext
  * @typedef {import('../types.js').ExtractionOptions} ExtractionOptions
@@ -14,7 +14,7 @@ import { forEachNameInPattern, getStaticName } from './patternUtils.js';
  * @param {TraverseContext} ctx
  * @param {ExtractionOptions} options
  * @param {EntityCollector} collector
- * @param {Function} traverse - ссылка на функцию обхода
+ * @param {Function} traverse
  */
 export function handleExport(node, ctx, options, collector, traverse) {
     switch (node.type) {
@@ -39,7 +39,7 @@ export function handleExport(node, ctx, options, collector, traverse) {
 }
 
 /**
- * Process ClassDeclaration and MethodDefinition.
+ * Process ClassDeclaration, MethodDefinition, PropertyDefinition.
  * @param {any} node
  * @param {TraverseContext} ctx
  * @param {ExtractionOptions} options
@@ -49,6 +49,8 @@ export function handleExport(node, ctx, options, collector, traverse) {
 export function handleClass(node, ctx, options, collector, traverse) {
     switch (node.type) {
         case 'ClassDeclaration':
+        case 'ClassExpression':
+            // Add class if it has a name
             if (options.types.has('class') && node.id?.type === 'Identifier') {
                 if (options.includeLocals || ctx.depth === 0) {
                     collector.add({
@@ -60,16 +62,30 @@ export function handleClass(node, ctx, options, collector, traverse) {
                     });
                 }
             }
+            // Traverse class body
             if (node.body) traverse(node.body, ctx, options, collector);
             break;
 
         case 'MethodDefinition':
+            // Methods (including constructor) — add as method or property (get/set)
             const methodName = getStaticName(node.key);
-            if (!methodName) break; // skip computed
-
-            // Determine if it's a getter/setter or regular method
-            if (node.kind === 'get' || node.kind === 'set') {
-                if (options.types.has('property') && (options.includeLocals || ctx.depth === 0)) {
+            if (methodName) {
+                if (node.kind === 'constructor') {
+                    // Constructor is not added as a separate method; typically it's not considered a class method.
+                    // Can either ignore or add as method. Leave out for now.
+                } else if (options.types.has('method') && node.kind === 'method') {
+                    collector.add({
+                        file: ctx.file,
+                        name: methodName,
+                        type: 'method',
+                        line: node.loc.start.line,
+                        exported: ctx.inExport,
+                    });
+                } else if (
+                    options.types.has('property') &&
+                    (node.kind === 'get' || node.kind === 'set')
+                ) {
+                    // Getters/setters are considered properties
                     collector.add({
                         file: ctx.file,
                         name: methodName,
@@ -78,35 +94,24 @@ export function handleClass(node, ctx, options, collector, traverse) {
                         exported: ctx.inExport,
                     });
                 }
-            } else {
-                // regular method (including constructor? constructor is kind='constructor'? In estree, constructor is MethodDefinition with kind='constructor'? Actually in ESTree, constructor is MethodDefinition with kind='constructor' and method=true. We should treat it as method (or maybe as constructor separately, but for now as method). Let's include it.
-                if (options.types.has('method') && (options.includeLocals || ctx.depth === 0)) {
-                    collector.add({
-                        file: ctx.file,
-                        name: methodName,
-                        type: 'method',
-                        line: node.loc.start.line,
-                        exported: ctx.inExport,
-                    });
-                }
             }
-            // Traverse the function value (parameters, body)
+            // Traverse method body (function)
             if (node.value) traverse(node.value, ctx, options, collector);
             break;
 
         case 'PropertyDefinition':
-            const propName = getStaticName(node.key);
-            if (!propName) break; // skip computed
-            if (options.types.has('property') && (options.includeLocals || ctx.depth === 0)) {
+            // Class fields (including private)
+            const fieldName = getStaticName(node.key);
+            if (fieldName && options.types.has('property')) {
                 collector.add({
                     file: ctx.file,
-                    name: propName,
+                    name: fieldName,
                     type: 'property',
                     line: node.loc.start.line,
                     exported: ctx.inExport,
                 });
             }
-            // traverse value (initializer) if any
+            // If there is an initializer, traverse it
             if (node.value) traverse(node.value, ctx, options, collector);
             break;
     }
@@ -123,7 +128,7 @@ export function handleClass(node, ctx, options, collector, traverse) {
 export function handleFunction(node, ctx, options, collector, traverse) {
     const functionName = node.id?.type === 'Identifier' ? node.id.name : null;
 
-    // Add function entity if it's a declaration and we want functions
+    // Add function if it's a FunctionDeclaration and the 'function' type is requested
     if (node.type === 'FunctionDeclaration' && options.types.has('function') && functionName) {
         if (options.includeLocals || ctx.depth === 0) {
             collector.add({
@@ -136,7 +141,7 @@ export function handleFunction(node, ctx, options, collector, traverse) {
         }
     }
 
-    // Process parameters (if parameter type requested and includeLocals)
+    // Process parameters if parameter type is requested and includeLocals is true
     if (options.types.has('parameter') && options.includeLocals) {
         const paramCtx = { ...ctx, depth: ctx.depth + 1, currentFunction: functionName };
         for (const param of node.params) {
@@ -182,6 +187,9 @@ export function handleVariable(node, ctx, options, collector, traverse) {
                 exported: ctx.inExport,
             });
         });
+
+        // Traverse initializer if present (may contain functions, etc.)
+        if (decl.init) traverse(decl.init, ctx, options, collector);
     }
 }
 
@@ -203,7 +211,7 @@ export function handleBlock(node, ctx, options, collector, traverse) {
 }
 
 /**
- * Process Property (object method).
+ * Process Property (object property or object pattern property).
  * @param {any} node
  * @param {TraverseContext} ctx
  * @param {ExtractionOptions} options
@@ -211,56 +219,31 @@ export function handleBlock(node, ctx, options, collector, traverse) {
  * @param {Function} traverse
  */
 export function handleProperty(node, ctx, options, collector, traverse) {
-    // Get property name if static
     const name = getStaticName(node.key);
-    if (!name) {
-        // For computed property, we still need to traverse its value (if any)
-        if (node.value) traverse(node.value, ctx, options, collector);
-        return;
+    if (!name) return;
+
+    // For properties in object literals (method = true means method)
+    if (options.types.has('method') && node.method) {
+        collector.add({
+            file: ctx.file,
+            name,
+            type: 'method',
+            line: node.loc.start.line,
+            exported: ctx.inExport,
+        });
+    } else if (options.types.has('property') && node.kind !== 'method') {
+        // Regular property or getter/setter (kind = 'get'/'set')
+        collector.add({
+            file: ctx.file,
+            name,
+            type: 'property',
+            line: node.loc.start.line,
+            exported: ctx.inExport,
+        });
     }
 
-    // Determine if it's a method, getter/setter, or data property
-    if (node.method) {
-        // Method (e.g., { foo() {} })
-        if (options.types.has('method') && (options.includeLocals || ctx.depth === 0)) {
-            collector.add({
-                file: ctx.file,
-                name,
-                type: 'method',
-                line: node.loc.start.line,
-                exported: ctx.inExport,
-            });
-        }
-        // Traverse the function body (parameters, etc.)
-        if (node.value) traverse(node.value, ctx, options, collector);
-    } else if (node.kind === 'get' || node.kind === 'set') {
-        // Getter/setter
-        if (options.types.has('property') && (options.includeLocals || ctx.depth === 0)) {
-            collector.add({
-                file: ctx.file,
-                name,
-                type: 'property',
-                line: node.loc.start.line,
-                exported: ctx.inExport,
-            });
-        }
-        // Traverse the function body (parameters, etc.) — getter/setter have a function value
-        if (node.value) traverse(node.value, ctx, options, collector);
-    } else {
-        // Data property (including shorthand)
-        if (options.types.has('property') && (options.includeLocals || ctx.depth === 0)) {
-            collector.add({
-                file: ctx.file,
-                name,
-                type: 'property',
-                line: node.loc.start.line,
-                exported: ctx.inExport,
-            });
-        }
-        // Traverse the value (could be any expression)
-        if (node.value) traverse(node.value, ctx, options, collector);
+    // Traverse property value (may be a function, object, etc.)
+    if (node.value) {
+        traverse(node.value, ctx, options, collector);
     }
-
-    // Also traverse key if it's complex (though we already handled static name)
-    // Not needed for computed, but if key is an expression, we traversed earlier via the default case? Actually we only traverse if we returned early. We'll rely on the default traversal in traverse.js to handle any remaining properties.
 }

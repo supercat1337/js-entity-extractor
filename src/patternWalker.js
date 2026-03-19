@@ -12,6 +12,7 @@ export function forEachNameInPattern(node, callback) {
 
     switch (node.type) {
         case 'Identifier':
+        case 'Property':
             callback(node.name, node.loc);
             break;
         case 'ObjectPattern':

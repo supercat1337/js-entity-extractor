@@ -19,7 +19,7 @@ import { EntityCollector } from './entityCollector.js';
  */
 export function extractEntities(filePath, code, options) {
     // Remove shebang
-    code = code.replace(/^#!.*\n/, '');
+    //code = code.replace(/^#!.*\n/, '');
 
     const collector = new EntityCollector();
     /** @type {Set<string>} */
