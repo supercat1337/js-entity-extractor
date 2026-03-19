@@ -127,8 +127,8 @@ async function main() {
     // Write summary to file or stdout
     if (argv.output) {
         await writeSummary(summary, argv.output);
-    } else if (!argv.ndjson && !argv.dictionary) {
-        // If no output file, no ndjson, and no dictionary, print summary to stdout
+    } else if (!argv.ndjson && !argv.dictionary && !argv.dictionaryMap) {
+        // If no output file, no ndjson, and no dictionary, and no dictionary map print summary to stdout
         await writeSummary(summary, null);
     }
 
