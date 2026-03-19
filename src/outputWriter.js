@@ -37,3 +37,20 @@ export async function writeDictionary(names, filePath) {
     const content = names.sort().join('\n') + '\n';
     await fs.writeFile(filePath, content, 'utf8');
 }
+
+/**
+ * Writes a flat list of names to a text file (one per line).
+ *
+ * @param {string[]} names
+ * @param {string} filePath
+ */
+export async function writeDictionaryMap(names, filePath) {
+    names.sort();
+    const result = {};
+    names.forEach(value => {
+        result[value] = value;
+    });
+
+    const content = JSON.stringify(result, null, '  ');
+    await fs.writeFile(filePath, content, 'utf8');
+}

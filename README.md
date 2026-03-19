@@ -80,6 +80,7 @@ js-entity-extractor "src/**/*.js" -d names.txt --dictionary-valid-only
 | `-h, --help`              | Show help.                                                                            | –       |
 | `-d, --dictionary <file>` | Write a flat text file with all unique entity names (one per line)                    |         |
 | `--dictionary-valid-only` | When used with --dictionary, only include names that are valid JavaScript             |         |
+| `-x, --dictionary-map <file>` | Write a JSON map file with all unique entity names as keys and values                 |         |
 
 > **Note:** Both kebab-case (`--include-locals`) and camelCase (`--includeLocals`) are accepted for all options.
 

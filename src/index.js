@@ -4,7 +4,7 @@
 import minimist from 'minimist';
 import { collectFiles } from './fileCollector.js';
 import { extractEntities } from './extractor/index.js';
-import { writeNdjson, writeSummary, writeDictionary } from './outputWriter.js';
+import { writeNdjson, writeSummary, writeDictionary, writeDictionaryMap } from './outputWriter.js';
 import fs from 'node:fs/promises';
 import { browserGlobalNames } from './globalNames.js';
 
@@ -17,7 +17,8 @@ Options:
   -o, --output <file>       Write summary JSON to <file> (if omitted and no --ndjson, prints to stdout)
   --ndjson <file>           Write full NDJSON data to <file>
   --dictionary <file>       Write a flat text file with all unique entity names (one per line)
-  --dictionary-valid-only  When used with --dictionary, only include names that are valid JavaScript identifiers (filters out symbols like *, +, etc.)
+  --dictionary-valid-only   When used with --dictionary, only include names that are valid JavaScript identifiers (filters out symbols like *, +, etc.)
+  --dictionary-map <file>   Write a JSON map file with all unique entity names as keys and values
   -r, --recursive           For directory paths, add /**/*.js automatically
   -t, --types <types...>    Types to include: class, function, variable, parameter, method, property (default: all)
   --include-locals          Include local declarations inside functions/blocks (default: true)
@@ -29,7 +30,7 @@ Options:
 
 async function main() {
     const argv = minimist(process.argv.slice(2), {
-        string: ['output', 'ndjson', 'dictionary', 'exclude', 'types'],
+        string: ['output', 'ndjson', 'dictionary', 'exclude', 'types', 'dictionaryMap'],
         boolean: ['recursive', 'includeLocals', 'exportedOnly', 'dictionaryValidOnly', 'help'],
         alias: {
             o: 'output',
@@ -37,6 +38,8 @@ async function main() {
             t: 'types',
             h: 'help',
             d: 'dictionary',
+            x: 'dictionaryMap',
+            'dictionary-map': 'dictionaryMap',
             'include-locals': 'includeLocals',
             'exported-only': 'exportedOnly',
             'dictionary-valid-only': 'dictionaryValidOnly',
@@ -130,7 +133,7 @@ async function main() {
     }
 
     // Write dictionary if requested
-    if (argv.dictionary) {
+    if (argv.dictionary || argv.dictionaryMap) {
         // Collect all unique names from summary (flatten all arrays)
         const allNames = new Set([
             ...summary.classes,
@@ -143,13 +146,19 @@ async function main() {
 
         let namesList = [...allNames];
         if (argv.dictionaryValidOnly) {
-            const isValidIdentifier = name => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+            const isValidIdentifier = name => /^#?[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
             namesList = namesList.filter(
                 name => isValidIdentifier(name) && !browserGlobalNames.has(name)
             );
         }
 
-        await writeDictionary(namesList, argv.dictionary);
+        if (argv.dictionary) {
+            await writeDictionary(namesList, argv.dictionary);
+        }
+
+        if (argv.dictionaryMap) {
+            await writeDictionaryMap(namesList, argv.dictionaryMap);
+        }
     }
 
     process.exit(hasErrors ? 1 : 0);
